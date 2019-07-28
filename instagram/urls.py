@@ -15,8 +15,21 @@ Including another URLconf
 """
 from django.conf.urls import url,include
 from django.contrib import admin
+from django.contrib.auth import views 
+
+from photos.registration import MyRegistrationView
+from registration.forms import RegistrationForm
+from registration.backends.simple.views import RegistrationView
+
+from photos import views as my_views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'',include('photos.urls'))
+    url(r'',include('photos.urls')),
+    url(r'^accounts/register/$', MyRegistrationView.as_view(), name='registration_register'), 
+    url(r'^accounts/', include('registration.backends.simple.urls')),
+    url(r'^logout/$', views.logout, {"next_page": '/'}), 
+    url(r'^tinymce/', include('tinymce.urls')),
+    url(r'^profile/$', my_views.add_profile, name = 'add-profile'),
+    url(r'^image/$', my_views.add_image, name = 'add-image')
 ]
