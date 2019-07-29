@@ -1,18 +1,30 @@
 from django.shortcuts import render
 from django.http  import HttpResponse,HttpResponseRedirect
-from . models import Image, Profile
+from . models import Image, Profile, Comment
+from django.contrib.auth.models import User
 from .forms import photoForm, ProfileForm, ImageForm
 from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 @login_required(login_url='/accounts/login/')
 def welcome(request):
-    current_user = request.user
+    current_user = request.user    
 
     if not Profile.user_has_profile(current_user.id):
         return HttpResponseRedirect('profile')
 
-    photos = Image.objects.all()
+    if request.method == 'POST':
+        params = request.POST
+        image_id = params.get(key="image_id", default=None)
+        comment = params.get(key="comment", default=None)
+
+        if comment is not None and image_id is not None:
+            image = Image.objects.get(id = image_id)
+            profile = Profile.objects.get(user=current_user)
+            cmt = Comment(comment=comment, image=image, profile= profile)
+            cmt.save_comment()
+
+    photos = Image.objects.select_related().all()
     return render(request, 'index.html',{"photos" : photos})
 
 
@@ -74,3 +86,19 @@ def add_image(request):
             return HttpResponseRedirect('/')
         
     return render(request, 'add_image.html', {"form": form})
+
+
+def search_results(request):
+
+    if 'search_term' in request.GET and request.GET["search_term"]:
+        search_term = request.GET.get("search_term")
+        searched_photos = Image.search_by_imagename(search_term)
+        message = f"{search_term}"
+
+        return render(request, 'all-photos/search.html',{"message":message,"photos": searched_photos})
+
+    else:
+        message = "You haven't searched for any term"
+        return render(request, 'all-photos/search.html',{"message":message})
+
+
