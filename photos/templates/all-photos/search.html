@@ -1,0 +1,26 @@
+{%extends 'all-photos/base.html'%} {% block content %}
+<div class="container">
+
+    <div class="row">
+        {% if photos%}
+        <h2>Found {{ photos|length }} photos of {{search_term}}</h2>
+        {% else %}
+        <h2> {{message}}</h2>
+        {% endif %}
+
+    </div>
+
+    <div class="row">
+
+        {% if photos%} {% for photo in photos %}
+        <div class="col-sm-6 col-md-3">
+            <h1>{{photo.Img_name}}</h1>
+            <img src="{{photo.image.url}}" alt="no image">
+
+        </div>
+        {% endfor %} {% else %}
+        <p>no result found</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
